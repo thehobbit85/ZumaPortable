@@ -38,11 +38,14 @@ def gitVersionCode = {
 android {
     namespace 'io.github.wszqkzqk.pvzportable'
     compileSdk 36
+    // Pinned to the NDK installed in the local SDK so AGP doesn't try to fetch
+    // its own default side-by-side version.
+    ndkVersion "27.2.12479018"
 
     defaultConfig {
         applicationId "io.github.wszqkzqk.pvzportable"
         minSdk 24
-        targetSdk 36
+        targetSdk 34
         versionCode gitVersionCode
         versionName gitVersionName
 

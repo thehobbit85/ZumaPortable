@@ -118,6 +118,7 @@ public:
 	virtual void			SetLinesFont(_Font* theFont);
 
 	virtual void			SetColors(const DialogColorScheme& theColors);
+	virtual void			SetColor(int theIdx, const Color& theColor); // port: 1.3-style indexed setter
 	virtual void			SetHeaderColor(const Color& theColor);
 	virtual void			SetLinesColor(const Color& theColor);
 	virtual void			SetButtonTextColor(const Color& theColor);

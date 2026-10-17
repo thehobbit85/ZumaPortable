@@ -93,6 +93,7 @@ public:
 	virtual std::string			GetStringAt(int theIdx);
 	void						Resize(int theX, int theY, int theWidth, int theHeight) override;
 	virtual void				SetColors(const ListWidgetColorScheme& theColors);
+	virtual void				SetColors(const int theColors[][3], int theNumColors); // port: 1.3-style RGB table
 	virtual int					AddLine(const std::string& theLine, bool alphabetical);
 	virtual void				SetLine(int theIdx, const std::string& theString);
 	virtual int					GetLineCount();

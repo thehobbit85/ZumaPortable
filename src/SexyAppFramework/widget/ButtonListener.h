@@ -31,12 +31,17 @@ namespace Sexy
 class ButtonListener
 {
 public:
-	virtual void			ButtonPress(int theId) = 0;
-	virtual void			ButtonDepress(int theId) = 0;
-	virtual void			ButtonDownTick(int theId) = 0;
-	virtual void			ButtonMouseEnter(int theId) = 0;
-	virtual void			ButtonMouseLeave(int theId) = 0;
-	virtual void			ButtonMouseMove(int theId, int theX, int theY) = 0;
+	// Port note: SexyAppFramework 1.3 declared all of these with empty default
+	// bodies; the modern framework made them pure virtual. Restored here so the
+	// decompiled Zuma widget classes (which only implement the subset the game
+	// used) stay concrete. The modern framework's own widgets override them.
+	virtual void			ButtonPress(int theId) {}
+	virtual void			ButtonPress(int theId, int theClickCount) { ButtonPress(theId); }
+	virtual void			ButtonDepress(int theId) {}
+	virtual void			ButtonDownTick(int theId) {}
+	virtual void			ButtonMouseEnter(int theId) {}
+	virtual void			ButtonMouseLeave(int theId) {}
+	virtual void			ButtonMouseMove(int theId, int theX, int theY) {}
 };
 
 }

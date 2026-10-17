@@ -95,6 +95,7 @@ public:
 
 	virtual void			SetFont(_Font* theFont);
 	virtual void			SetColors(const ButtonColorScheme& theColors);
+	virtual void			SetColor(int theIdx, const Color& theColor); // port: 1.3-style indexed setter
 	virtual void			SetLabelColor(const Color& theColor);
 	virtual void			SetLabelHiliteColor(const Color& theColor);
 	virtual void			SetBkgColor(const Color& theColor);

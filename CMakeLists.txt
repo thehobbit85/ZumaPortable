@@ -45,10 +45,7 @@ file(GLOB SOURCES CONFIGURE_DEPENDS
 	src/SexyAppFramework/sound/*.cpp
 	src/SexyAppFramework/widget/*.cpp
 	src/SexyAppFramework/fcaseopen/*.c
-	src/PvzpLib/*.cpp
-	src/Lawn/*.cpp
-	src/Lawn/Widget/*.cpp
-	src/Lawn/System/*.cpp
+	src/Zuma/*.cpp
 )
 
 option(LOW_MEMORY "Enable low memory mode" OFF)
@@ -71,6 +68,37 @@ elseif(EMSCRIPTEN)
 	)
 	list(APPEND PLAT_INCLUDES
 		${CMAKE_CURRENT_SOURCE_DIR}/src/SexyAppFramework/platform/emscripten
+	)
+elseif(ANDROID)
+	# Native dependency prefix built by scripts/build_android_deps.sh
+	# (SDL2 + libpng + libjpeg-turbo for the target ABI). Override with the
+	# ZUMA_ANDROID_DEPS environment variable.
+	# NOTE: the NDK toolchain sets CMAKE_FIND_ROOT_PATH_MODE_{LIBRARY,INCLUDE}=ONLY,
+	# so prebuilt deps must be added to CMAKE_FIND_ROOT_PATH or find_path/find_library
+	# will never look outside the sysroot.
+	if(DEFINED ENV{ZUMA_ANDROID_DEPS})
+		list(APPEND CMAKE_PREFIX_PATH "$ENV{ZUMA_ANDROID_DEPS}")
+		list(APPEND CMAKE_FIND_ROOT_PATH "$ENV{ZUMA_ANDROID_DEPS}")
+	else()
+		list(APPEND CMAKE_PREFIX_PATH "C:/Users/admin/zuma-port/android-deps/${ANDROID_ABI}")
+		list(APPEND CMAKE_FIND_ROOT_PATH "C:/Users/admin/zuma-port/android-deps/${ANDROID_ABI}")
+	endif()
+
+	# Port note: Zuma Deluxe's music is a MO3 tracker module, which needs
+	# libopenmpt, and there is no Android build of it in this tree yet. Build
+	# without music for now - the game runs, the soundtrack is silent. Adding
+	# libopenmpt for Android is a follow-up milestone.
+	set(OPENMPT_LIB "")
+
+	# Android goes through SDL2 exactly like the desktop, so it uses the default
+	# platform layer (SDLActivity drives SDL_main). Without these the framework's
+	# window/input/text-input symbols are left undefined at link time.
+	list(APPEND SOURCES
+		${CMAKE_CURRENT_SOURCE_DIR}/src/SexyAppFramework/platform/default/Window.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/src/SexyAppFramework/platform/default/Input.cpp
+	)
+	list(APPEND PLAT_INCLUDES
+		${CMAKE_CURRENT_SOURCE_DIR}/src/SexyAppFramework/platform/default
 	)
 else()
 	if(VCPKG_TOOLCHAIN)

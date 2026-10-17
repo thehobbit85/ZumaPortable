@@ -31,9 +31,12 @@ namespace Sexy
 class ListListener
 {
 public:
-	virtual void ListClicked(int theId, int theIdx, int theClickCount) = 0;
-	virtual void ListClosed(int theId) = 0;
-	virtual void ListHiliteChanged(int theId, int theOldIdx, int theNewIdx) = 0;
+	// Port note: SexyAppFramework 1.3 declared these with empty default bodies;
+	// the modern framework made them pure virtual. Restored so decompiled Zuma
+	// widgets that only implement the subset the game used stay concrete.
+	virtual void ListClicked(int theId, int theIdx, int theClickCount) {}
+	virtual void ListClosed(int theId) {}
+	virtual void ListHiliteChanged(int theId, int theOldIdx, int theNewIdx) {}
 };
 
 }

@@ -117,6 +117,24 @@ Dialog::Dialog(Image* theComponentImage, Image* theButtonComponentImage, int the
 
 Dialog::~Dialog() = default;
 
+// Port note: SexyAppFramework 1.3's indexed colour setter, kept for the
+// decompiled Zuma call sites. Index order matches the 1.3 COLOR_* enum:
+// header, lines, footer, button text, button text hilite, background, outline.
+void Dialog::SetColor(int theIdx, const Color& theColor)
+{
+	switch (theIdx)
+	{
+	case 0: mColors.mHeader = theColor; break;
+	case 1: mColors.mLines = theColor; break;
+	case 2: mColors.mFooter = theColor; break;
+	case 3: mColors.mButtonText = theColor; break;
+	case 4: mColors.mButtonTextHilite = theColor; break;
+	case 5: mColors.mBkg = theColor; break;
+	case 6: mColors.mOutline = theColor; break;
+	default: break;
+	}
+}
+
 void Dialog::SetColors(const DialogColorScheme& theColors)
 {
 	mColors = theColors;

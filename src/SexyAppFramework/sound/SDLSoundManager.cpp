@@ -25,6 +25,7 @@
 #include "SDLSoundManager.h"
 #include "SDLSoundInstance.h"
 #include "paklib/PakInterface.h"
+#include "ZumaOggSfx.h"
 #include <memory>
 #include <vector>
 
@@ -54,6 +55,12 @@ SDLSoundManager::SDLSoundManager()
 		return;
 	}
 
+	// Port note: SDL_mixer only decodes formats whose backends were initialised.
+	// PvZ's assets are WAV/MP3, but Zuma Deluxe ships its sound effects as Ogg
+	// Vorbis, which fails to load (silently - Mix_LoadWAV_RW just returns null)
+	// without this.
+	Mix_Init(MIX_INIT_OGG | MIX_INIT_MP3);
+
 	if (Mix_OpenAudio(44100, AUDIO_S16SYS, 2, 2048))
 	{
 		Sexy::LogInfoLn("Failed to initialize SDL mixer");
@@ -71,6 +78,7 @@ SDLSoundManager::~SDLSoundManager()
 	ReleaseChannels();
 	if (mInitializedMixer)
 		Mix_CloseAudio();
+	Mix_Quit();
 
 	if (SDL_WasInit(SDL_INIT_AUDIO))
 		SDL_QuitSubSystem(SDL_INIT_AUDIO);
@@ -298,6 +306,25 @@ bool SDLSoundManager::DecodeSound(intptr_t theSfxID, const std::string& theFilen
 		mSourceSounds[theSfxID] = Mix_LoadWAV_RW(SDL_RWFromConstMem(data.data(), fileSize), 1);
 
 		if (mSourceSounds[theSfxID]) break;
+	}
+
+	if (!mSourceSounds[theSfxID])
+	{
+		// Port note: Mix_LoadWAV_RW in SDL-Mixer-X only accepts sample formats
+		// (WAV/AIFF/VOC) - compressed formats live behind its music interface.
+		// Zuma Deluxe ships every effect as Ogg Vorbis, so decode it here.
+		std::string aOggName = theFilename + ".ogg";
+		if (PFILE* fp = p_fopen(aOggName.c_str(), "rb"))
+		{
+			p_fseek(fp, 0, SEEK_END);
+			size_t fileSize = p_ftell(fp);
+			p_fseek(fp, 0, SEEK_SET);
+			std::vector<uint8_t> data(fileSize);
+			p_fread(data.data(), 1, fileSize, fp);
+			p_fclose(fp);
+
+			mSourceSounds[theSfxID] = ZumaLoadOggChunkFromMemory(data.data(), data.size());
+		}
 	}
 
 	if (!mSourceSounds[theSfxID])

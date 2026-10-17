@@ -69,6 +69,22 @@ EditWidget::~EditWidget()
 
 }
 
+// Port note: SexyAppFramework 1.3's indexed colour setter, kept for the
+// decompiled Zuma call sites. Index order: background, outline, text, hilite,
+// hilite text.
+void EditWidget::SetColor(int theIdx, const Color& theColor)
+{
+	switch (theIdx)
+	{
+	case 0: mColors.mBkg = theColor; break;
+	case 1: mColors.mOutline = theColor; break;
+	case 2: mColors.mText = theColor; break;
+	case 3: mColors.mHilite = theColor; break;
+	case 4: mColors.mHiliteText = theColor; break;
+	default: break;
+	}
+}
+
 void EditWidget::SetColors(const EditWidgetColorScheme& theColors)
 {
 	mColors = theColors;

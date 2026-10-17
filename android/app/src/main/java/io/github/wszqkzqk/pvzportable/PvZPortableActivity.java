@@ -37,7 +37,13 @@ import android.window.OnBackInvokedDispatcher;
 
 import org.libsdl.app.SDLActivity;
 
+import android.content.res.AssetManager;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
 
 public class PvZPortableActivity extends SDLActivity {
     private static final String TAG = "PvZPortable";
@@ -47,6 +53,7 @@ public class PvZPortableActivity extends SDLActivity {
     protected void onCreate(Bundle savedInstanceState) {
         File extDir = getExternalFilesDir(null);
         if (extDir != null && !extDir.exists()) extDir.mkdirs();
+        extractBundledAssetsIfNeeded(extDir);
         Log.i(TAG, "Resource dir: " + (extDir != null ? extDir.getAbsolutePath() : "null"));
 
         if (!hasGameResources(extDir)) {
@@ -155,8 +162,74 @@ public class PvZPortableActivity extends SDLActivity {
 
     private static boolean hasGameResources(File dir) {
         if (dir == null || !dir.isDirectory()) return false;
-        File pak = new File(dir, "main.pak");
+        // Port note: Zuma Deluxe ships loose resources (no main.pak), so the
+        // archive is not required - properties/resources.xml is the real marker.
         File props = new File(dir, "properties");
-        return pak.exists() && props.isDirectory();
+        return props.isDirectory() && new File(props, "resources.xml").isFile();
+    }
+
+    // Port note: for this test build the game data ships inside the APK under
+    // assets/zuma/ and is unpacked once into getExternalFilesDir(), which is
+    // where the framework looks for resources on Android. The user-driven
+    // import flow (ResourceImportActivity) remains for the public release.
+    private void extractBundledAssetsIfNeeded(File dest) {
+        if (dest == null) return;
+        if (new File(dest, "properties/resources.xml").isFile()) return;
+
+        ArrayList<String> pending = new ArrayList<>();
+        pending.add("zuma");
+        long copied = 0;
+
+        while (!pending.isEmpty()) {
+            String path = pending.remove(pending.size() - 1);
+            String[] children;
+            try {
+                children = getAssets().list(path);
+            } catch (IOException e) {
+                Log.e(TAG, "Asset listing failed for " + path, e);
+                continue;
+            }
+            if (children == null) continue;
+
+            for (String child : children) {
+                String childPath = path + "/" + child;
+                if (isAssetDir(childPath)) {
+                    pending.add(childPath);
+                } else {
+                    copied += copyAsset(childPath,
+                            new File(dest, childPath.substring("zuma/".length())));
+                }
+            }
+        }
+
+        Log.i(TAG, "Bundled assets extracted: " + copied + " bytes");
+    }
+
+    private boolean isAssetDir(String path) {
+        try {
+            String[] children = getAssets().list(path);
+            return children != null && children.length > 0;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    private long copyAsset(String assetPath, File outFile) {
+        File parent = outFile.getParentFile();
+        if (parent != null && !parent.exists()) parent.mkdirs();
+        try (InputStream in = getAssets().open(assetPath);
+             OutputStream out = new FileOutputStream(outFile)) {
+            byte[] buf = new byte[65536];
+            int n;
+            long total = 0;
+            while ((n = in.read(buf)) > 0) {
+                out.write(buf, 0, n);
+                total += n;
+            }
+            return total;
+        } catch (IOException e) {
+            Log.e(TAG, "Failed copying asset " + assetPath, e);
+            return 0;
+        }
     }
 }

@@ -785,7 +785,15 @@ bool ResourceManager::DoLoadSound(SoundRes* theRes)
 		return Fail("Out of free sound ids");
 
 	if(!mApp->mSoundManager->LoadSound(aSoundId, aRes->mPath))
-		return Fail(std::format("Failed to load sound: {}", aRes->mPath));
+	{
+		// Port note: Zuma Deluxe ships every effect as Ogg Vorbis, which the
+		// mixer cannot load as a chunk. Treat an unloadable effect as a silent
+		// one instead of failing the resource group - a failed group aborts
+		// startup (tree shakes out as a DoExit). Real decoding is the next
+		// milestone; see ZumaOggSfx.h.
+		aRes->mSoundId = -1;
+		return true;
+	}
 	SEXY_PERF_END("ResourceManager:LoadSound");
 
 	if (aRes->mVolume >= 0)

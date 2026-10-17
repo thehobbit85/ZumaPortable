@@ -71,6 +71,29 @@ ListWidget::ListWidget(int theId, _Font *theFont, ListListener *theListListener)
 
 ListWidget::~ListWidget() = default;
 
+// Port note: SexyAppFramework 1.3 took an RGB table here; kept for the
+// decompiled Zuma call sites. Row order matches the 1.3 enum: background,
+// outline, text, hilite, select.
+void ListWidget::SetColors(const int theColors[][3], int theNumColors)
+{
+	static const int kMaxRows = 5;
+	int aCount = theNumColors < kMaxRows ? theNumColors : kMaxRows;
+
+	for (int i = 0; i < aCount; i++)
+	{
+		Color aColor(theColors[i][0], theColors[i][1], theColors[i][2]);
+		switch (i)
+		{
+		case 0: mColors.mBkg = aColor; break;
+		case 1: mColors.mOutline = aColor; break;
+		case 2: mColors.mText = aColor; break;
+		case 3: mColors.mHilite = aColor; break;
+		case 4: mColors.mSelect = aColor; break;
+		default: break;
+		}
+	}
+}
+
 void ListWidget::SetColors(const ListWidgetColorScheme& theColors)
 {
 	mColors = theColors;

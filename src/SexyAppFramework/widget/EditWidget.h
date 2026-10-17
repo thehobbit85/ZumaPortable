@@ -89,6 +89,7 @@ protected:
 public:
 	virtual void			SetFont(_Font* theFont, _Font* theWidthCheckFont = nullptr);
 	virtual void			SetColors(const EditWidgetColorScheme& theColors);
+	virtual void			SetColor(int theIdx, const Color& theColor); // port: 1.3-style indexed setter
 	virtual void			SetText(const std::string& theText, bool leftPosToZero = true);
 	virtual bool			IsPartOfWord(char32_t theChar);
 	virtual int				GetCharAt(int x, int y);

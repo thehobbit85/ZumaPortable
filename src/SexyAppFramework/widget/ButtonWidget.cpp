@@ -59,6 +59,22 @@ void ButtonWidget::SetFont(_Font* theFont)
 	mFont.reset(theFont->Duplicate());
 }
 
+// Port note: SexyAppFramework 1.3's indexed colour setter, kept for the
+// decompiled Zuma call sites. Index order matches the 1.3 enum.
+void ButtonWidget::SetColor(int theIdx, const Color& theColor)
+{
+	switch (theIdx)
+	{
+	case 0: mColors.mLabel = theColor; break;
+	case 1: mColors.mLabelHilite = theColor; break;
+	case 2: mColors.mDarkOutline = theColor; break;
+	case 3: mColors.mLightOutline = theColor; break;
+	case 4: mColors.mMediumOutline = theColor; break;
+	case 5: mColors.mBkg = theColor; break;
+	default: break;
+	}
+}
+
 void ButtonWidget::SetColors(const ButtonColorScheme& theColors)
 {
 	mColors = theColors;
