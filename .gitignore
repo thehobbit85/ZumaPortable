@@ -369,6 +369,9 @@ FodyWeavers.xsd
 # Precompiled Headers
 *.gch
 *.pch
+# NOTE: Zuma's prefix header is a required SOURCE file (included by src/Zuma/*.cpp
+# and src/main.cpp), not a generated PCH — keep it tracked despite the *.pch rule.
+!src/Zuma/Zuma_Prefix.pch
 
 # Compiled Dynamic libraries
 *.so
