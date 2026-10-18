@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12...4.0)
 
-project(pvz-portable LANGUAGES C CXX)
+project(zuma-portable LANGUAGES C CXX)
 
 include(CMake/ProjectVersion.cmake)
 
@@ -206,14 +206,14 @@ endif()
 
 # Android requires a shared library loaded by SDLActivity; other platforms use an executable.
 if(ANDROID)
-	add_library(pvz-portable SHARED ${SOURCES})
+	add_library(zuma-portable SHARED ${SOURCES})
 elseif(IOS)
-	add_executable(pvz-portable MACOSX_BUNDLE ${SOURCES})
+	add_executable(zuma-portable MACOSX_BUNDLE ${SOURCES})
 else()
-	add_executable(pvz-portable ${SOURCES})
+	add_executable(zuma-portable ${SOURCES})
 endif()
 
-target_include_directories(pvz-portable PRIVATE
+target_include_directories(zuma-portable PRIVATE
 	${PLAT_INCLUDES}
 	${PROJECT_BINARY_DIR}
 	${PROJECT_SOURCE_DIR}/src
@@ -221,26 +221,26 @@ target_include_directories(pvz-portable PRIVATE
 	${PROJECT_SOURCE_DIR}/src/SexyAppFramework/sound/SDL-Mixer-X/include
 	${SDL2_INCLUDE_DIRS}
 )
-target_compile_definitions(pvz-portable PRIVATE
+target_compile_definitions(zuma-portable PRIVATE
 	$<$<BOOL:${PVZ_DEBUG}>:PVZ_DEBUG>
 	$<$<BOOL:${DO_FIX_BUGS}>:DO_FIX_BUGS>
 )
-target_compile_features(pvz-portable PRIVATE cxx_std_20)
-set_target_properties(pvz-portable PROPERTIES CXX_EXTENSIONS OFF)
+target_compile_features(zuma-portable PRIVATE cxx_std_20)
+set_target_properties(zuma-portable PROPERTIES CXX_EXTENSIONS OFF)
 
 if (LOW_MEMORY)
-	target_compile_definitions(pvz-portable PRIVATE LOW_MEMORY)
+	target_compile_definitions(zuma-portable PRIVATE LOW_MEMORY)
 endif()
 
 if(EMSCRIPTEN)
-	set_property(TARGET pvz-portable APPEND PROPERTY LINK_DEPENDS
+	set_property(TARGET zuma-portable APPEND PROPERTY LINK_DEPENDS
 		"${CMAKE_CURRENT_SOURCE_DIR}/wasm/shell.html"
 	)
-	target_link_libraries(pvz-portable PRIVATE
+	target_link_libraries(zuma-portable PRIVATE
 		SDL2_mixer_ext_Static
 		${OPENMPT_LIB}
 	)
-	target_link_options(pvz-portable PRIVATE
+	target_link_options(zuma-portable PRIVATE
 		"SHELL:-sUSE_SDL=2"
 		"SHELL:-sUSE_ZLIB=1"
 		"SHELL:-sUSE_LIBPNG=1"
@@ -256,9 +256,9 @@ if(EMSCRIPTEN)
 		"SHELL:-lidbfs.js"
 		"SHELL:--shell-file ${CMAKE_CURRENT_SOURCE_DIR}/wasm/shell.html"
 	)
-	set_target_properties(pvz-portable PROPERTIES SUFFIX ".html")
+	set_target_properties(zuma-portable PROPERTIES SUFFIX ".html")
 else()
-	target_link_libraries(pvz-portable PRIVATE
+	target_link_libraries(zuma-portable PRIVATE
 		SDL2_mixer_ext_Static 
 		${OPENMPT_LIB} 
 		PNG::PNG
@@ -272,10 +272,10 @@ endif()
 
 if (WIN32)
 	if(MSVC)
-		target_compile_options(pvz-portable PRIVATE /utf-8)
+		target_compile_options(zuma-portable PRIVATE /utf-8)
 	endif()
 
-	target_sources(pvz-portable PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/SexyAppFramework/LawnProject.rc)
+	target_sources(zuma-portable PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/SexyAppFramework/LawnProject.rc)
 
 	set_source_files_properties(
 		${CMAKE_CURRENT_SOURCE_DIR}/src/SexyAppFramework/LawnProject.rc
@@ -284,34 +284,34 @@ if (WIN32)
 			OBJECT_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/icon.ico"
 	)
 
-	target_link_libraries(pvz-portable PRIVATE ws2_32 user32 gdi32 winmm imm32 shlwapi)
-	target_compile_definitions(pvz-portable PRIVATE WINDOWS)
+	target_link_libraries(zuma-portable PRIVATE ws2_32 user32 gdi32 winmm imm32 shlwapi)
+	target_compile_definitions(zuma-portable PRIVATE WINDOWS)
 
 	if(NOT CONSOLE)
 		if(MSVC)
-			set_target_properties(pvz-portable PROPERTIES WIN32_EXECUTABLE TRUE)
+			set_target_properties(zuma-portable PROPERTIES WIN32_EXECUTABLE TRUE)
 		else()
-			target_link_options(pvz-portable PRIVATE -mwindows)
+			target_link_options(zuma-portable PRIVATE -mwindows)
 		endif()
 	endif()
 elseif (NINTENDO_SWITCH)
-	target_link_libraries(pvz-portable PRIVATE GLESv2 EGL glapi drm_nouveau)
+	target_link_libraries(zuma-portable PRIVATE GLESv2 EGL glapi drm_nouveau)
 
-	nx_generate_nacp(pvz-portable.nacp
+	nx_generate_nacp(zuma-portable.nacp
 		NAME "PvZ Portable"
 		AUTHOR "wszqkzqk, etc., a community-driven port"
 		VERSION "${PVZP_VERSION_PLAIN}"
 	)
 
-	nx_create_nro(pvz-portable
-		NACP pvz-portable.nacp
+	nx_create_nro(zuma-portable
+		NACP zuma-portable.nacp
 		ICON ${CMAKE_CURRENT_SOURCE_DIR}/icon-switch.jpg
 	)
 elseif (ANDROID)
-	target_link_libraries(pvz-portable PRIVATE GLESv2 EGL android log)
-	set_target_properties(pvz-portable PROPERTIES OUTPUT_NAME "main")
+	target_link_libraries(zuma-portable PRIVATE GLESv2 EGL android log)
+	set_target_properties(zuma-portable PROPERTIES OUTPUT_NAME "main")
 elseif (IOS)
-	target_link_libraries(pvz-portable PRIVATE
+	target_link_libraries(zuma-portable PRIVATE
 		"-framework Foundation"
 		"-framework UIKit"
 		"-framework OpenGLES"
@@ -325,28 +325,28 @@ elseif (IOS)
 	)
 
 	configure_file(ios/Info.plist.in "${CMAKE_CURRENT_BINARY_DIR}/Info.plist" @ONLY)
-	set_target_properties(pvz-portable PROPERTIES
+	set_target_properties(zuma-portable PROPERTIES
 		MACOSX_BUNDLE TRUE
-		MACOSX_BUNDLE_GUI_IDENTIFIER "io.github.wszqkzqk.pvz-portable"
+		MACOSX_BUNDLE_GUI_IDENTIFIER "io.github.wszqkzqk.zuma-portable"
 		MACOSX_BUNDLE_BUNDLE_NAME "PvZ Portable"
 		MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_BINARY_DIR}/Info.plist"
 		XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "1,2"
 		XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET "16.4"
-		XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER "io.github.wszqkzqk.pvz-portable"
+		XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER "io.github.wszqkzqk.zuma-portable"
 		XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "-"
 		XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME "AppIcon"
 	)
 
 	# Add launch storyboard to the bundle
 	if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ios/LaunchScreen.storyboard")
-		target_sources(pvz-portable PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/ios/LaunchScreen.storyboard")
+		target_sources(zuma-portable PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/ios/LaunchScreen.storyboard")
 		set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/ios/LaunchScreen.storyboard"
 			PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 	endif()
 
 	# Add asset catalog (app icon)
 	if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ios/Assets.xcassets")
-		target_sources(pvz-portable PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/ios/Assets.xcassets")
+		target_sources(zuma-portable PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/ios/Assets.xcassets")
 		set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/ios/Assets.xcassets"
 			PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 	endif()

@@ -1,10 +1,15 @@
 # Zuma Deluxe Portable
 
+[![License: LGPL v3](https://img.shields.io/badge/License-LGPL_v3-blue.svg)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/abduznik/ZumaPortable?style=flat)](https://github.com/abduznik/ZumaPortable/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/abduznik/ZumaPortable?style=flat)](https://github.com/abduznik/ZumaPortable/network/members)
+[![GitHub issues](https://img.shields.io/github/issues/abduznik/ZumaPortable)](https://github.com/abduznik/ZumaPortable/issues)
+[![Last commit](https://img.shields.io/github/last-commit/abduznik/ZumaPortable)](https://github.com/abduznik/ZumaPortable/commits)
+[![Android APK](https://img.shields.io/badge/download-APK-green)](../../releases)
+
 <div align="center">
   <img src="icon-readme.png" alt="Zuma Deluxe Portable" width="450">
 </div>
-
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/wszqkzqk/PvZ-Portable)
 
 A **cross-platform** port of **Zuma Deluxe**, built on the open SDL2-based SexyAppFramework engine (from the [PvZ-Portable](https://github.com/wszqkzqk/PvZ-Portable) project), aiming to bring the **100% authentic Zuma Deluxe experience** to every platform.
 
@@ -22,6 +27,42 @@ A **cross-platform** port of **Zuma Deluxe**, built on the open SDL2-based SexyA
 * Non-Commercial: This project is not affiliated with, authorized, or endorsed by PopCap Games or Electronic Arts.
 * Project icons and platform-specific logos are created by me (wszqkzqk) with the help of AI image generation tools and are not official assets of PopCap/EA.
 * To play the game using this project you **MUST** have access to the original game files by purchasing it on [EA's official website](https://www.ea.com/games/plants-vs-zombies/plants-vs-zombies) or [Steam](https://store.steampowered.com/app/3590/Plants_vs_Zombies_GOTY_Edition/).
+
+## Built With
+
+This port stands on the shoulders of open-source projects:
+
+| Component | Role | License |
+|---|---|---|
+| [SDL2](https://github.com/libsdl-org/SDL) | Windowing, input, audio, threads | zlib |
+| [SexyAppFramework](https://github.com/wszqkzqk/PvZ-Portable) (via PvZ-Portable) | PopCap-style engine: rendering, resource loading, saves, registry emulation | LGPL-3.0 |
+| [SDL Mixer X](https://github.com/WohlSoft/SDL-Mixer-X) | Audio mixing + music decoding | MIT |
+| [libopenmpt](https://libopenmpt.org/) | Tracker-module (`.mo3`) music playback | BSD |
+| [libpng](https://libpng.org/) · [libjpeg-turbo](https://libjpeg-turbo.imglib.org/) · [zlib](https://zlib.net/) | Image + compression codecs | zlib / BSD |
+| [Android NDK](https://developer.android.com/ndk) + Gradle | Native build + APK packaging | Apache-2.0 |
+
+Zuma Deluxe itself is © PopCap Games / Electronic Arts. This project reimplements the game **engine** and ships **no** game assets — you supply your own legally purchased copy.
+
+## Getting the Android APK
+
+**Option 1 — download a prebuilt build (easiest):**
+Grab the latest `zuma-portable-android-arm64-v8a.apk` from the [**Releases**](../../releases) page. Continuous integration builds it automatically on every release tag. Install it, launch, and import your own legally purchased Zuma Deluxe game files when prompted.
+
+**Option 2 — build it yourself:** see [Building the Android APK](#building-the-android-apk).
+
+## Building the Android APK
+
+Requirements: Android SDK + **NDK 27.2.12479018**, JDK 17+.
+
+```bash
+cd android
+# Point Gradle at your SDK (or just open the android/ folder in Android Studio):
+echo "sdk.dir=/path/to/Android/Sdk" > local.properties
+./gradlew assembleDebug
+# APK: android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+Gradle's CMake integration builds the native library automatically. Install the APK, then import your own game files on first launch. (The CI release build instead uses `-PusePrebuiltLibs=true` with libraries built ahead of time — see `.github/workflows/ci.yml`.)
 
 ## Features
 
@@ -58,12 +99,12 @@ This project supports the following platforms (including but not limited to):
 | macOS           | Executable dir (resources); per-user app-data for writable files | Works                                                                                  |
 | BSD Family      | Executable dir (resources); per-user app-data for writable files | Works (verified at least on FreeBSD)                                                                               |
 | Haiku           | Executable dir (resources); per-user app-data for writable files | Partially works: no music                                                              |
-| Android         | `Android/data/io.github.wszqkzqk.pvzportable/files/` | Works                                                                                  |
+| Android         | `Android/data/io.github.abduznik.zuma/files/` | Works                                                                                  |
 | iOS / iPadOS    | App Documents directory (Files app) | Works (sideload only; unsigned IPA)                                                    |
 | Web (WASM)      | Browser IndexedDB (saves); resources uploaded at runtime    | Works (requires a HTTP server) |
 | Nintendo Switch | sdmc:/switch/PvZPortable | Works on real hardware. Kenji-NX crashes on boot.                           |
 
-To play the game, you need the game data from PvZ GOTY. Place `main.pak` and the `properties/` folder next to the `pvz-portable` executable (the game will search for resources relative to the executable's directory). You can also use extracted data instead of `main.pak` if you prefer.
+To play the game, you need the game data from **Zuma Deluxe**. Place `main.pak` and the `properties/` folder next to the `zuma-portable` executable (the game will search for resources relative to the executable's directory). You can also use extracted data instead of `main.pak` if you prefer.
 
 Note about writable data and caches:
 
