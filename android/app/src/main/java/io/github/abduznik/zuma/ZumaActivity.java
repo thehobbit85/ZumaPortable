@@ -19,7 +19,7 @@
  * along with PvZ-Portable. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.wszqkzqk.pvzportable;
+package io.github.abduznik.zuma;
 
 import android.content.Intent;
 import android.os.Build;
@@ -43,18 +43,41 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.util.ArrayList;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
 
-public class PvZPortableActivity extends SDLActivity {
-    private static final String TAG = "PvZPortable";
+public class ZumaActivity extends SDLActivity {
+    private static final String TAG = "ZumaPortable";
     private OnBackInvokedCallback mBackCallback;
+    private Thread mLogMirrorThread;
+    private volatile boolean mLogMirrorStop;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         File extDir = getExternalFilesDir(null);
         if (extDir != null && !extDir.exists()) extDir.mkdirs();
+
+        // Diagnostics: truncate the log and write a Java-side header BEFORE the
+        // native layer starts (native appends to this same file from SDL_main),
+        // so the log has content from the very first moment of the process.
+        truncateDiag();
+        appendDiag("=== Zuma Android diag (Java) start ===");
+        appendDiag("SDK=" + Build.VERSION.SDK_INT + " release=" + Build.VERSION.RELEASE
+                + " model=" + Build.MODEL + " device=" + Build.DEVICE);
+        appendDiag("resource dir=" + (extDir != null ? extDir.getAbsolutePath() : "null"));
+
         extractBundledAssetsIfNeeded(extDir);
+        appendDiag("assets extracted; hasGameResources=" + hasGameResources(extDir));
         Log.i(TAG, "Resource dir: " + (extDir != null ? extDir.getAbsolutePath() : "null"));
+        ensureLegacyStoragePermission();
+        startLogMirror(extDir);
 
         if (!hasGameResources(extDir)) {
             super.onCreate(savedInstanceState);
@@ -89,6 +112,7 @@ public class PvZPortableActivity extends SDLActivity {
 
     @Override
     protected void onDestroy() {
+        mLogMirrorStop = true;
         if (mBackCallback != null) {
             getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(mBackCallback);
             mBackCallback = null;
@@ -230,6 +254,139 @@ public class PvZPortableActivity extends SDLActivity {
         } catch (IOException e) {
             Log.e(TAG, "Failed copying asset " + assetPath, e);
             return 0;
+        }
+    }
+
+    // --- Diagnostic log mirror ---------------------------------------------
+    // The native side writes zuma-diag.log into getExternalFilesDir() from the
+    // very start of SDL_main. This thread mirrors that file into the public
+    // Downloads folder as zuma-diag.txt every couple of seconds so it can be
+    // read from any file manager - even if the game hangs (this thread is
+    // independent of SDL). Android 10+ uses MediaStore (no permission needed).
+    private void truncateDiag() {
+        File dir = getExternalFilesDir(null);
+        if (dir == null) return;
+        try (FileOutputStream fos = new FileOutputStream(new File(dir, "zuma-diag.log"), false)) {
+            // truncate to zero for a clean per-launch log
+        } catch (IOException e) {
+            Log.e(TAG, "truncateDiag failed", e);
+        }
+    }
+
+    private void appendDiag(String line) {
+        File dir = getExternalFilesDir(null);
+        if (dir == null) return;
+        try (FileOutputStream fos = new FileOutputStream(new File(dir, "zuma-diag.log"), true)) {
+            fos.write(("[java] " + line + "\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            Log.e(TAG, "appendDiag failed", e);
+        }
+    }
+
+    private void ensureLegacyStoragePermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{ android.Manifest.permission.WRITE_EXTERNAL_STORAGE }, 1001);
+            }
+        }
+    }
+
+    private void startLogMirror(File extDir) {
+        if (extDir == null) return;
+        final File nativeLog = new File(extDir, "zuma-diag.log");
+        mLogMirrorStop = false;
+        mLogMirrorThread = new Thread(() -> {
+            long lastLen = -1;
+            while (!mLogMirrorStop) {
+                try { Thread.sleep(2000); } catch (InterruptedException ie) { return; }
+                try {
+                    long len = nativeLog.isFile() ? nativeLog.length() : 0;
+                    if (len != lastLen) {
+                        publishLogToDownloads(nativeLog);
+                        lastLen = len;
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Log mirror failed", e);
+                }
+            }
+        }, "zuma-log-mirror");
+        mLogMirrorThread.setDaemon(true);
+        mLogMirrorThread.start();
+    }
+
+    private void publishLogToDownloads(File logFile) {
+        try {
+            byte[] data = readAllBytes(logFile);
+            boolean ok;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                ok = publishViaMediaStore(data);
+                if (!ok) ok = publishDirect(data);
+            } else {
+                ok = publishDirect(data);
+            }
+            if (!ok) Log.e(TAG, "All Downloads publish strategies failed");
+        } catch (Exception e) {
+            Log.e(TAG, "publishLogToDownloads failed", e);
+        }
+    }
+
+    private boolean publishViaMediaStore(byte[] data) {
+        try {
+            ContentResolver cr = getContentResolver();
+            Uri collection = MediaStore.Downloads.EXTERNAL_CONTENT_URI;
+            Uri existing = null;
+            String[] proj = { MediaStore.Downloads._ID };
+            String sel = MediaStore.Downloads.DISPLAY_NAME + "=?";
+            String[] args = { "zuma-diag.txt" };
+            try (Cursor c = cr.query(collection, proj, sel, args, null)) {
+                if (c != null && c.moveToFirst()) {
+                    existing = Uri.withAppendedPath(collection, String.valueOf(c.getLong(0)));
+                }
+            }
+            Uri target = existing;
+            if (target == null) {
+                ContentValues values = new ContentValues();
+                values.put(MediaStore.Downloads.DISPLAY_NAME, "zuma-diag.txt");
+                values.put(MediaStore.Downloads.MIME_TYPE, "text/plain");
+                values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+                target = cr.insert(collection, values);
+            }
+            if (target == null) return false;
+            try (OutputStream os = cr.openOutputStream(target, "wt")) {
+                if (os == null) return false;
+                os.write(data);
+                return true;
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "MediaStore publish failed", e);
+            return false;
+        }
+    }
+
+    private boolean publishDirect(byte[] data) {
+        try {
+            File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            if (!dir.exists() && !dir.mkdirs()) return false;
+            File out = new File(dir, "zuma-diag.txt");
+            try (OutputStream os = new FileOutputStream(out)) {
+                os.write(data);
+            }
+            return true;
+        } catch (Exception e) {
+            Log.e(TAG, "Direct Downloads write failed", e);
+            return false;
+        }
+    }
+
+    private static byte[] readAllBytes(File f) throws IOException {
+        if (!f.isFile()) return new byte[0];
+        try (FileInputStream in = new FileInputStream(f);
+             ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+            byte[] buf = new byte[65536];
+            int n;
+            while ((n = in.read(buf)) > 0) bos.write(buf, 0, n);
+            return bos.toByteArray();
         }
     }
 }

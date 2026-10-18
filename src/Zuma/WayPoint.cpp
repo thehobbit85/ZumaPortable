@@ -137,6 +137,9 @@ SexyVector3 WayPointMgr::CalcPerpendicular(float theWayPoint)
 
 float WayPointMgr::GetRotationForPoint(int theWayPoint)
 {
+    if (mWayPoints.empty())
+        return 0.0f;
+
     int aWayPoint = theWayPoint;
     if (aWayPoint < 0)
         aWayPoint = 0;
@@ -150,6 +153,9 @@ float WayPointMgr::GetRotationForPoint(int theWayPoint)
 
 void WayPointMgr::CalcPerpendicularForPoint(int theWayPoint)
 {
+    if (mWayPoints.empty())
+        return;
+
     WayPoint *p1 = &mWayPoints[theWayPoint];
     if (p1->mHavePerpendicular)
         return;

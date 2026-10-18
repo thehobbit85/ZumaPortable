@@ -1,12 +1,12 @@
-# PvZ-Portable
+# Zuma Deluxe Portable
 
 <div align="center">
-  <img src="icon-readme.png" alt="PvZ-Portable" width="450">
+  <img src="icon-readme.png" alt="Zuma Deluxe Portable" width="450">
 </div>
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/wszqkzqk/PvZ-Portable)
 
-A **cross-platform** community-driven reimplementation of Plants vs. Zombies: Game of the Year Edition, aiming to bring the **100% authentic experience** of Plants vs. Zombies to every platform.
+A **cross-platform** port of **Zuma Deluxe**, built on the open SDL2-based SexyAppFramework engine (from the [PvZ-Portable](https://github.com/wszqkzqk/PvZ-Portable) project), aiming to bring the **100% authentic Zuma Deluxe experience** to every platform.
 
 | 🌿 Authentic | 🎮 Portable | 🛠️ Open |
 | :---: | :---: | :---: |
@@ -16,7 +16,7 @@ A **cross-platform** community-driven reimplementation of Plants vs. Zombies: Ga
 
 **⚠️ Notice:**
 
-* This repository does **NOT** contain any copyrighted game assets (such as images, music, or fonts) owned by PopCap Games or Electronic Arts. Users must provide their own `main.pak` and `properties/` folder from a **legally purchased copy** of Plants vs. Zombies: GOTY Edition.
+* This repository does **NOT** contain any copyrighted **Zuma Deluxe** game assets (images, sounds, levels, music, or fonts), which are owned by PopCap Games / Electronic Arts. Zuma Deluxe is a trademark of PopCap Games / Electronic Arts; this project is **not** affiliated with, authorized, or endorsed by them. To play, you **MUST** supply your own game files from a **legally purchased copy** of Zuma Deluxe (e.g. on [Steam](https://store.steampowered.com/app/37400/Zuma_Deluxe/) or [EA](https://www.ea.com/games/zuma)) — import them in-app via the resource import screen. The engine code is licensed under **LGPL v3** (see `LICENSE`).
 * The codebase is a manual reimplementation derived from community research (such as [植物大战僵尸吧](https://tieba.baidu.com/f?ie=utf-8&kw=%E6%A4%8D%E7%89%A9%E5%A4%A7%E6%88%98%E5%83%B5%E5%B0%B8), [PVZ Wiki](https://wiki.pvz1.com/doku.php?id=home) and [PvZ Tools](https://pvz.tools/memory/)). It is written to utilize portable backends like SDL2 and OpenGL ES 2.0 (with desktop OpenGL 2.1 fallback). The author (wszqkzqk) **NEVER reverse engineered** the program; the author wrote it solely based on publicly available information and game testing. Also, code generated directly through reverse engineering will **not be accepted**.
 * This project is intended solely for **educational purposes**, focusing on **cross-platform porting techniques**, engine modernization, and learning how classic game logic can be adapted to various hardware architectures.
 * Non-Commercial: This project is not affiliated with, authorized, or endorsed by PopCap Games or Electronic Arts.

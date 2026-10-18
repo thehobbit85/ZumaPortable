@@ -498,6 +498,7 @@ void CircleShootApp::LoadingThreadProc()
     i = 0;
     for (;;)
     {
+        Sexy::LogInfoLn("[zuma-diag] loading group {} ({})", i, resourceGroups[i]);
         mResourceManager->StartLoadResources(resourceGroups[i]);
 
         while (mResourceManager->LoadNextResource())
@@ -507,8 +508,11 @@ void CircleShootApp::LoadingThreadProc()
             i == 0 && !Sexy::ExtractResourcesByName(mResourceManager.get(),
                                                     resourceGroups[0]))
         {
+            Sexy::LogErrorLn("[zuma-diag] ERROR in group {} ({}): {}", i,
+                             resourceGroups[i], mResourceManager->GetErrorText());
             break;
         }
+        Sexy::LogInfoLn("[zuma-diag] group {} ({}) OK", i, resourceGroups[i]);
 
         ++mUnk28;
         ++i;

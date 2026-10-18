@@ -44,7 +44,9 @@ void ResourceManager::ImageRes::DeleteResource()
 
 void ResourceManager::SoundRes::DeleteResource()
 {
-	if (mSoundId >= 0)
+	// Port note: same teardown hazard as SharedImageRef::Release - the global can
+	// already be gone by the time the resource manager is destroyed.
+	if (mSoundId >= 0 && gSexyAppBase != nullptr)
 		gSexyAppBase->mSoundManager->ReleaseSound(mSoundId);
 
 	mSoundId = -1;

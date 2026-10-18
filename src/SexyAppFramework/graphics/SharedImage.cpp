@@ -72,7 +72,12 @@ void SharedImageRef::Release()
 	mUnsharedImage = nullptr;
 	if (mSharedImage != nullptr)
 	{
-		if (--mSharedImage->mRefCount == 0)
+		// Port note: ~SexyAppBase frees every shared image and clears the global
+		// *before* its members (including ResourceManager) are destroyed, so by
+		// the time teardown reaches here this reference is dangling and the app
+		// pointer is null. Short-circuiting avoids both the use-after-free and
+		// the null dereference; there is nothing left to clean up at that point.
+		if (gSexyAppBase != nullptr && --mSharedImage->mRefCount == 0)
 			gSexyAppBase->mCleanupSharedImages.store(true, std::memory_order_relaxed);
 	}
 	mSharedImage = nullptr;

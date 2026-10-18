@@ -1363,6 +1363,25 @@ void SexyAppBase::ReadFromRegistry()
 		RegistryWriteInteger("InProgress", 1);
 }
 
+// Resolve a save/write path against the resource folder, mirroring how
+// p_fopen()/FOpen() resolves relative READ paths (GetResourceFolder()). On
+// desktop cwd == resource dir so this is a no-op; on Android cwd is '/', so
+// without this a raw ofstream/remove of "userdata/users.dat" misses and saves
+// never persist (the read side already goes through p_fopen).
+static std::string ResolveSavePath(const std::string& theFileName)
+{
+	const std::string& aBase = Sexy::GetResourceFolder();
+	if (!aBase.empty() && !Sexy::IsPathRooted(theFileName))
+	{
+		std::string aFull = aBase;
+		if (!aFull.empty() && aFull.back() != '/' && aFull.back() != '\\')
+			aFull += '/';
+		aFull += theFileName;
+		return aFull;
+	}
+	return theFileName;
+}
+
 bool SexyAppBase::WriteBytesToFile(const std::string& theFileName, const void *theData, unsigned long theDataLen)
 {
 	if ((mPlayingDemoBuffer) && IsOnPrimaryThread())
@@ -1383,8 +1402,9 @@ bool SexyAppBase::WriteBytesToFile(const std::string& theFileName, const void *t
 		return true;
 	}
 
-	MkDir(GetFileDir(theFileName));
-	std::ofstream aFile(PathFromU8(theFileName), std::ios::out | std::ios::binary | std::ios::trunc);
+	std::string aSavePath = ResolveSavePath(theFileName);
+	MkDir(GetFileDir(aSavePath));
+	std::ofstream aFile(PathFromU8(aSavePath), std::ios::out | std::ios::binary | std::ios::trunc);
 	if (!aFile)
 	{
 		if ((mRecordingDemoBuffer) && IsOnPrimaryThread())
@@ -1537,7 +1557,7 @@ bool SexyAppBase::EraseFile(const std::string& theFileName)
 	if (mPlayingDemoBuffer)
 		return true;
 
-	return remove(theFileName.c_str()) == 0;
+	return remove(ResolveSavePath(theFileName).c_str()) == 0;
 }
 
 void SexyAppBase::SEHOccured()
@@ -3045,7 +3065,15 @@ void SexyAppBase::ShowResourceError(bool doExit)
 		aMessage = aError + "\n\n";
 	aMessage += "Please place main.pak and the properties/ folder into:\n" + GetResourceFolder();
 #endif
+	Sexy::LogErrorLn("[zuma-diag] RESOURCE ERROR: {} (folder: {})", aError, GetResourceFolder());
+#if defined(__ANDROID__)
+	// Android: a modal Popup() raised from the loading thread can block forever
+	// (SDL's message box marshals to the UI thread and waits). Log + exit cleanly
+	// so a resource failure surfaces in logcat instead of a frozen screen.
+	(void)aMessage;
+#else
 	Popup(aMessage);
+#endif
 	if (doExit)
 		DoExit(1);
 }

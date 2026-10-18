@@ -1,6 +1,8 @@
 #include "Zuma_Prefix.pch"
 
 #include <SexyAppFramework/misc/Debug.h>
+#include <SexyAppFramework/Common.h>
+#include <SexyAppFramework/fcaseopen/fcaseopen.h>
 
 #include "DataSync.h"
 
@@ -31,7 +33,14 @@ bool DataReader::OpenFile(const std::string &theFileName)
 {
     Close();
 
-    mFileHandle = fopen(theFileName.c_str(), "rb");
+    // Port note: on Android (and Linux) cwd is '/', so a raw fopen() of a
+    // relative path like "levels/x/x.dat" misses - the game data lives in the
+    // app's external storage, not the cwd. Route through fcaseopenat() with the
+    // resource-folder prefix (the same path every image/sound/font load uses) so
+    // it resolves regardless of cwd and tolerates case/backslash differences.
+    // Without this, curve .dat files failed to load on Android, leaving the
+    // waypoint list empty and crashing the level intro with a null deref.
+    mFileHandle = fcaseopenat(GetResourceFolder().c_str(), theFileName.c_str(), "rb");
     return mFileHandle != NULL;
 }
 

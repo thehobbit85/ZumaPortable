@@ -19,7 +19,7 @@
  * along with PvZ-Portable. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.wszqkzqk.pvzportable;
+package io.github.abduznik.zuma;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -162,7 +162,7 @@ public class ResourceImportActivity extends AppCompatActivity {
     }
 
     private void launchGame() {
-        Intent intent = new Intent(this, PvZPortableActivity.class);
+        Intent intent = new Intent(this, ZumaActivity.class);
         startActivity(intent);
         finish();
     }

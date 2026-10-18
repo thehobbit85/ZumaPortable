@@ -456,3 +456,15 @@ build-*/
 
 # Game recordings
 *.dmo
+
+# --- Zuma Android port ---
+# Copyrighted Zuma Deluxe game data (images, sounds, levels, music, fonts) must
+# NOT be committed or distributed. The app ships WITHOUT assets; users import
+# their own legally purchased copy via ResourceImportActivity.
+android/app/src/main/assets/
+
+# Vendored SDL2 source clone (build dependency, fetched separately)
+sdl2-src/
+
+# Launcher icon backup artifact
+*.pvz-backup
