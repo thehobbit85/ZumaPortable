@@ -197,6 +197,14 @@ set(USE_XMP OFF CACHE BOOL "SDL Mixer X xmp")
 set(USE_OPUS OFF CACHE BOOL "SDL Mixer X opus")
 set(USE_DRFLAC OFF CACHE BOOL "SDL Mixer X flac")
 set(USE_PXTONE OFF CACHE BOOL "SDL Mixer X pxtone")
+# Force the bundled OGG/MP3 decoders (stb_vorbis + dr_mp3) so the build never
+# depends on external libvorbis/libogg/libmpg123 (not in vcpkg.json). The vcpkg
+# toolchain used by CI can otherwise flip SDL-Mixer-X onto the system-libvorbis
+# and mpg123 paths, which then fail to link libmain.so with undefined ov_*/mpg123_*.
+set(USE_OGG_VORBIS     ON  CACHE BOOL "SDL Mixer X OGG Vorbis codec")
+set(USE_OGG_VORBIS_STB ON  CACHE BOOL "SDL Mixer X: use bundled stb_vorbis (no external libvorbis)")
+set(USE_MP3_DRMP3      ON  CACHE BOOL "SDL Mixer X: use bundled dr_mp3")
+set(USE_MP3_MPG123     OFF CACHE BOOL "SDL Mixer X: disable mpg123 (needs external libmpg123)")
 add_subdirectory(src/SexyAppFramework/sound/SDL-Mixer-X)
 
 # Patch SDL-Mixer-X's transitive SDL2 dep without touching vendored CMake files
