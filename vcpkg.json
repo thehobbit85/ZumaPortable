@@ -3,6 +3,9 @@
     "libjpeg-turbo",
     "libopenmpt",
     "libpng",
+    "libogg",
+    "libvorbis",
+    "libmpg123",
     {
       "name": "sdl2",
       "platform": "!android"
