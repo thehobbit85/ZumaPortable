@@ -469,5 +469,12 @@ android/app/src/main/assets/
 # Vendored SDL2 source clone (build dependency, fetched separately)
 sdl2-src/
 
+# Local Android build products (scripts/build-android-apk.sh)
+/android-deps/
+/build-android-*/
+/dist/
+/.cache/
+/android/app/src/main/jniLibs/
+
 # Launcher icon backup artifact
 *.pvz-backup

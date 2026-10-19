@@ -1,11 +1,11 @@
-# Maintainer: wszqkzqk <wszqkzqk@qq.com>
+# Maintainer: abduznik <abduznik@users.noreply.github.com>
 
-pkgname=pvz-portable
+pkgname=zuma-portable
 pkgver=0.0.0
 pkgrel=1
-pkgdesc="A cross-platform community-driven reimplementation of Plants vs. Zombies: Game of the Year Edition, aiming to bring the 100% authentic PvZ experience to every platform."
-url="https://github.com/wszqkzqk/${pkgname}"
-arch=('x86_64' 'aarch64' 'riscv64' 'loong64')
+pkgdesc="Source port of Zuma Deluxe built on SDL2 (engine only - bring your own game files)"
+url="https://github.com/abduznik/${pkgname}"
+arch=('x86_64' 'aarch64')
 license=('LGPL-3.0-or-later')
 depends=(
     glibc
@@ -24,16 +24,12 @@ makedepends=(
 )
 source=(
     "${pkgname}::git+file://${startdir}/.."
-    # IMPORTANT: You must create this file yourself using assets from your legally owned copy.
-    # See archlinux/README.md for instructions.
-    "Plants_vs._Zombies_1.2.0.1073_EN.zip"
-    "pvz-portable.sh"
-    "io.github.wszqkzqk.pvz-portable.desktop"
+    "zuma-portable.sh"
+    "zuma-portable.desktop"
 )
 sha256sums=('SKIP'
             'SKIP'
-            'b9dd103e31c17f867dad75af2bd901682f76e8a461e64a00b2538df2f2c584a8'
-            'c06a50aedf4698d7ad1368bc69fbcdbf2f00925688353bbf4b3ef4c288d5f36b')
+            'SKIP')
 
 pkgver() {
     cd "${pkgname}"
@@ -48,15 +44,26 @@ build() {
 }
 
 package() {
-    mkdir -p "${pkgdir}/usr/share/pvz-portable"
-    install -Dm644 "main.pak" "${pkgdir}/usr/share/pvz-portable/main.pak"
-    cp -r "properties" "${pkgdir}/usr/share/pvz-portable"
-
-    install -Dm755 "build/pvz-portable" "${pkgdir}/usr/share/pvz-portable/pvz-portable"
-    install -Dm755 "pvz-portable.sh" "${pkgdir}/usr/bin/pvz-portable"
+    # Engine only. Game data (properties/, images/, sounds/, levels/, music/,
+    # fonts/) is NOT packaged - the launcher reads it from the user's home.
+    install -Dm755 "build/zuma-portable" "${pkgdir}/usr/share/zuma-portable/zuma-portable"
+    install -Dm755 "zuma-portable.sh" "${pkgdir}/usr/bin/zuma-portable"
 
     install -Dm644 "${pkgname}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
     install -Dm644 "${pkgname}/COPYING" "${pkgdir}/usr/share/licenses/${pkgname}/COPYING"
-    install -Dm644 "io.github.wszqkzqk.pvz-portable.desktop" "${pkgdir}/usr/share/applications/io.github.wszqkzqk.pvz-portable.desktop"
-    install -Dm644 "${pkgname}/icon.png" "${pkgdir}/usr/share/pixmaps/io.github.wszqkzqk.pvz-portable.png"
+    install -Dm644 "zuma-portable.desktop" "${pkgdir}/usr/share/applications/zuma-portable.desktop"
+    install -Dm644 "${pkgname}/icon.png" "${pkgdir}/usr/share/pixmaps/zuma-portable.png"
+}
+
+post_install() {
+    cat <<'EOF'
+Zuma Deluxe Portable is installed, but it ships no game data.
+
+Copy the contents of your legally purchased Zuma Deluxe folder
+(properties/, images/, sounds/, levels/, music/, fonts/) into:
+
+    ~/.local/share/zuma-portable/
+
+Then run `zuma-portable`.
+EOF
 }

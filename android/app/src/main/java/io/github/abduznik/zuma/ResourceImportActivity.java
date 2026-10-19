@@ -58,6 +58,7 @@ public class ResourceImportActivity extends AppCompatActivity {
     private static final int BUFFER_SIZE = 8192;
 
     private File gameDir;
+    private String zipPrefix; // resolved once per ZIP import, see stripCommonPrefix()
     private TextView statusText;
     private ProgressBar progressBar;
     private Button btnPickZip;
@@ -137,9 +138,17 @@ public class ResourceImportActivity extends AppCompatActivity {
 
     private boolean hasResources() {
         if (gameDir == null) return false;
-        File pak = new File(gameDir, "main.pak");
+        // Zuma Deluxe ships loose resources and no main.pak, so
+        // properties/resources.xml is the marker the native resource manager
+        // looks for at startup - the importer has to check the same thing.
         File props = new File(gameDir, "properties");
-        return pak.exists() && props.isDirectory();
+        return new File(props, "resources.xml").isFile();
+    }
+
+    /** A folder that is the root of a Zuma Deluxe install. */
+    private static boolean isGameRoot(DocumentFile dir) {
+        DocumentFile props = dir.findFile("properties");
+        return props != null && props.isDirectory() && props.findFile("resources.xml") != null;
     }
 
     private boolean hasSaveData() {
@@ -172,6 +181,7 @@ public class ResourceImportActivity extends AppCompatActivity {
         new Thread(() -> {
             try (InputStream is = getContentResolver().openInputStream(uri);
                  ZipInputStream zis = new ZipInputStream(is)) {
+                zipPrefix = null; // re-resolve the archive layout for this import
                 ZipEntry entry;
                 while ((entry = zis.getNextEntry()) != null) {
                     if (entry.isDirectory()) {
@@ -209,29 +219,37 @@ public class ResourceImportActivity extends AppCompatActivity {
     }
 
     /**
-     * Strips a single wrapper directory from zip entry paths when the entry
-     * doesn't start with a known top-level name (e.g. "PvZ/main.pak" -> "main.pak").
+     * Normalises a ZIP entry path so the game data always lands in the same
+     * layout regardless of how the archive was made. Two shapes are accepted:
+     * game data at the archive root (images/foo.png), or inside one wrapper
+     * directory (Zuma Deluxe/images/foo.png). The wrapper is resolved from the
+     * first entry and stripped from every entry, so the decision stays
+     * consistent for the whole archive.
      */
     private String stripCommonPrefix(String name) {
         name = name.replace('\\', '/').replaceAll("^/+", "");
 
-        if (isKnownTopLevel(name)) return name;
+        if (name.isEmpty()) return null;
 
-        // Strip one leading directory component
-        int slash = name.indexOf('/');
-        if (slash > 0 && slash < name.length() - 1) {
-            return name.substring(slash + 1);
+        if (zipPrefix == null) {
+            int slash = name.indexOf('/');
+            zipPrefix = (slash > 0 && !isKnownTopLevel(name)) ? name.substring(0, slash + 1) : "";
         }
-
-        return name;
+        if (!zipPrefix.isEmpty()) {
+            if (!name.startsWith(zipPrefix)) return null; // entry outside the wrapper
+            name = name.substring(zipPrefix.length());
+        }
+        return name.isEmpty() ? null : name;
     }
 
+    /** Top-level entries of a Zuma Deluxe installation (plus legacy PvZ names). */
     private static boolean isKnownTopLevel(String name) {
-        return name.startsWith("main.pak") || name.startsWith("properties/") ||
-               name.startsWith("Properties/") || name.startsWith("data/") ||
-               name.startsWith("images/") || name.startsWith("particles/") ||
-               name.startsWith("reanim/") || name.startsWith("sounds/") ||
-               name.startsWith("compiled/");
+        return name.startsWith("properties/") || name.startsWith("Properties/") ||
+               name.startsWith("images/") || name.startsWith("sounds/") ||
+               name.startsWith("levels/") || name.startsWith("music/") ||
+               name.startsWith("fonts/") || name.startsWith("main.pak") ||
+               name.startsWith("data/") || name.startsWith("compiled/") ||
+               name.startsWith("particles/") || name.startsWith("reanim/");
     }
 
     private void importFromDirectory(Uri treeUri) {
@@ -241,16 +259,14 @@ public class ResourceImportActivity extends AppCompatActivity {
                 DocumentFile root = DocumentFile.fromTreeUri(this, treeUri);
                 if (root == null) throw new IOException("Cannot open directory");
 
-                // If main.pak isn't here, check one level of subdirectories
+                // The picker may hand back either the Zuma Deluxe folder itself
+                // or a parent that contains it; accept one level of nesting.
                 DocumentFile sourceDir = root;
-                if (root.findFile("main.pak") == null) {
+                if (!isGameRoot(root)) {
                     for (DocumentFile child : root.listFiles()) {
-                        if (child.isDirectory()) {
-                            DocumentFile nested = child.findFile("main.pak");
-                            if (nested != null) {
-                                sourceDir = child;
-                                break;
-                            }
+                        if (child.isDirectory() && isGameRoot(child)) {
+                            sourceDir = child;
+                            break;
                         }
                     }
                 }

@@ -48,7 +48,7 @@ jobs:
       run: |
         chown -R builder:builder .
 
-    - name: Build PvZ-Portable
+    - name: Build Zuma Portable
       run: |
         sudo -u builder bash -lc '
           mkdir build
@@ -215,7 +215,7 @@ jobs:
         path: ~/pvz-deps
         key: linux-static-deps-v4-${{ env.SDL2_TAG }}-${{ env.OPENMPT_TAG }}-${{ env.LIBPNG_VERSION }}-${{ env.JPEG_TURBO_VERSION }}
 
-    - name: Build PvZ-Portable
+    - name: Build Zuma Portable
       run: |
         cmake -G Ninja -B build \
           -DCMAKE_BUILD_TYPE=Release \
@@ -256,7 +256,7 @@ jobs:
           mingw-w64-ucrt-x86_64-ninja
           mingw-w64-ucrt-x86_64-SDL2
 
-    - name: Compile PvZ-Portable for Windows
+    - name: Compile Zuma Portable for Windows
       shell: msys2 {0}
       run: |
         mkdir build
@@ -309,7 +309,7 @@ jobs:
       with:
         vcpkgJsonGlob: vcpkg.json
 
-    - name: Compile PvZ-Portable for Windows (MSVC)
+    - name: Compile Zuma Portable for Windows (MSVC)
       shell: pwsh
       run: |
         cmake -G "Ninja" -B build -DCMAKE_BUILD_TYPE=Release -DCONSOLE=OFF -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows-static
@@ -363,7 +363,7 @@ jobs:
       with:
         vcpkgJsonGlob: vcpkg.json
 
-    - name: Compile PvZ-Portable for Windows (MSVC)
+    - name: Compile Zuma Portable for Windows (MSVC)
       shell: pwsh
       run: |
         cmake -G "Ninja" -B build -DCMAKE_BUILD_TYPE=Release -DCONSOLE=OFF -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x86-windows-static
@@ -444,7 +444,7 @@ jobs:
           ninja \
           sdl2
 
-    - name: Build PvZ-Portable
+    - name: Build Zuma Portable
       run: |
         mkdir build
         cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release
@@ -671,7 +671,7 @@ jobs:
       with:
         vcpkgJsonGlob: vcpkg.json
 
-    - name: Build PvZ-Portable for iOS
+    - name: Build Zuma Portable for iOS
       run: |
         BUILD_DIR=build-ios
 
@@ -745,7 +745,7 @@ jobs:
           EXAMPLES=0 OPENMPT123=0 TEST=0 \
           PREFIX="${SYSROOT}" install
 
-    - name: Build PvZ-Portable for WebAssembly
+    - name: Build Zuma Portable for WebAssembly
       run: |
         mkdir build-wasm
         emcmake cmake -G Ninja -B build-wasm -DCMAKE_BUILD_TYPE=Release
@@ -766,7 +766,7 @@ jobs:
       run: |
         mkdir -p pages
         cp build-wasm/zuma-portable.html build-wasm/zuma-portable.js build-wasm/zuma-portable.wasm pages/
-        # Land /PvZ-Portable/ on the game page directly
+        # Land /ZumaPortable/ on the game page directly
         printf '<!doctype html><meta http-equiv="refresh" content="0; url=zuma-portable.html">\n' > pages/index.html
 
     - name: Upload GitHub Pages Artifact

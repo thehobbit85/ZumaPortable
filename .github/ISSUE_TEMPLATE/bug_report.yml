@@ -1,25 +1,25 @@
 name: Bug Report
-description: Report a bug or unexpected behavior in PvZ-Portable
+description: Report a bug or unexpected behavior in Zuma Deluxe Portable
 labels: ["bug"]
 body:
   - type: dropdown
     id: source
     attributes:
       label: Installation Source
-      description: How did you obtain the PvZ-Portable binary?
+      description: How did you get the app?
       options:
-        - Pre-built binary (from GitHub Releases or GitHub Actions)
+        - Prebuilt APK from Releases
         - Self-compiled from source
+        - Desktop binary from Releases
     validations:
       required: true
 
   - type: input
     id: version
     attributes:
-      label: PvZ-Portable Version
-      description: >
-        Version or commit hash of PvZ-Portable you are using.
-        You can find this from the release tag or `git describe --tags`.
+      label: Version
+      description: Release tag or commit hash (`git describe --tags` when built from source).
+      placeholder: "v0.1.0"
     validations:
       required: true
 
@@ -27,135 +27,66 @@ body:
     id: platform
     attributes:
       label: Platform
-      description: Which platform are you running PvZ-Portable on?
+      description: Where are you running it?
       options:
-        - Linux (x86_64)
-        - Linux (aarch64)
-        - Linux (riscv64)
-        - Linux (loongarch64)
-        - Linux (other)
-        - Windows (x64)
-        - Windows (ARM64)
-        - Windows (x86)
-        - macOS (Apple Silicon)
-        - macOS (Intel)
-        - Android
-        - iOS/iPadOS
-        - WebAssembly
-        - Haiku
-        - BSD Family
-        - Nintendo Switch
+        - Android (arm64 device)
+        - Android (emulator / other ABI)
+        - Windows x64
+        - Windows x86
+        - Linux x64
+        - WebAssembly in a browser
         - Other
     validations:
       required: true
 
-  - type: textarea
-    id: os-info
+  - type: input
+    id: device
     attributes:
-      label: OS / Environment Info
-      description: >
-        Provide details about your operating system and environment.
-        For Linux: distro name and version, kernel version, desktop environment, GPU driver, etc.
-        For Windows: Windows version, GPU driver version.
-        For macOS: macOS version, chip model.
-        For consoles: firmware version, CFW version.
-      placeholder: |
-        e.g.
-        Arch Linux, kernel 6.18.9, KDE Plasma 6, AMD Radeon Graphics
+      label: Device and OS version
+      description: Phone model and Android version, or OS and GPU driver on desktop.
+      placeholder: "Pixel 7, Android 14 / Windows 11, RTX 3060"
     validations:
       required: true
 
-  - type: textarea
-    id: build-deps
-    attributes:
-      label: Build Dependencies (self-compiled only)
-      description: >
-        If you compiled from source, list the versions of the key build dependencies.
-        Include at least: compiler (GCC/Clang/MSVC), CMake, SDL2, zlib, libjpeg, libpng,
-        libopenmpt.
-        You can get most of these from your package manager or `pkg-config --modversion`.
-    validations:
-      required: false
-
   - type: dropdown
-    id: resource-version
+    id: resources
     attributes:
-      label: Resource Pack Version
-      description: >
-        Which version of the original PvZ game data are you using?
-        The resource data (main.pak / properties) comes from different releases.
+      label: Game data source
+      description: Where did the Zuma Deluxe files come from?
       options:
-        - "1.2.0.1073 (Origin / PopCap GOTY)"
-        - "1.2.0.1096 (Steam GOTY)"
-        - "1.2.0.1093 (German/Spanish/French/Italian GOTY)"
-        - "1.1.0.1056 (Chinese GOTY)"
-        - Extracted / unpacked data
-        - Unknown / Other
+        - Steam release
+        - EA / Origin release
+        - Original 2003 CD release
+        - Other / not sure
     validations:
       required: true
 
   - type: textarea
     id: description
     attributes:
-      label: Bug Description
-      description: A clear and concise description of the bug.
+      label: What happens
+      description: What you expected, what actually happened, and whether it is reproducible.
     validations:
       required: true
-
-  - type: markdown
-    attributes:
-      value: >
-        **Tip:** if the bug happens during gameplay on a **desktop platform**, you can attach a
-        replay of your session. Launch the game with `-record`, reproduce the bug, then quit.
-        The game saves the recording as a `pvzp-*.dmo` file in the current working directory.
-        Keep it short, and check with `-play` that the replay shows the bug. GitHub does not
-        accept `.dmo` attachments, so zip the file before attaching it. See
-        [Recording and Playing Back Gameplay](https://github.com/wszqkzqk/PvZ-Portable#recording-and-playing-back-gameplay)
-        for details.
 
   - type: textarea
     id: steps
     attributes:
-      label: Steps to Reproduce
-      description: Step-by-step instructions to reproduce the issue.
+      label: Steps to reproduce
       placeholder: |
-        1. Launch the game
-        2. Go to '...'
-        3. Click on '...'
-        4. Observe the error
-    validations:
-      required: true
-
-  - type: textarea
-    id: expected
-    attributes:
-      label: Expected Behavior
-      description: What did you expect to happen?
-    validations:
-      required: true
-
-  - type: textarea
-    id: actual
-    attributes:
-      label: Actual Behavior
-      description: What actually happened instead?
+        1. Launch the app
+        2. Import the ZIP from ...
+        3. Start a game
+        4. See ...
     validations:
       required: true
 
   - type: textarea
     id: logs
     attributes:
-      label: Logs / Screenshots
+      label: Logs / screenshots
       description: >
-        If applicable, paste any relevant log output or attach screenshots / screen recordings.
-        You can drag-and-drop images here.
-    validations:
-      required: false
-
-  - type: textarea
-    id: additional
-    attributes:
-      label: Additional Context
-      description: Any other information that might be helpful (e.g. workarounds tried, related issues).
+        Android: attach `zuma-diag.txt` from your Downloads folder (the app mirrors its native
+        log there). Desktop: paste the terminal output. Screenshots help.
     validations:
       required: false

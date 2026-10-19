@@ -80,8 +80,10 @@ elseif(ANDROID)
 		list(APPEND CMAKE_PREFIX_PATH "$ENV{ZUMA_ANDROID_DEPS}")
 		list(APPEND CMAKE_FIND_ROOT_PATH "$ENV{ZUMA_ANDROID_DEPS}")
 	else()
-		list(APPEND CMAKE_PREFIX_PATH "C:/Users/admin/zuma-port/android-deps/${ANDROID_ABI}")
-		list(APPEND CMAKE_FIND_ROOT_PATH "C:/Users/admin/zuma-port/android-deps/${ANDROID_ABI}")
+		# Local builds: scripts/build-android-apk.sh installs the ABI dependency
+		# set into android-deps/<abi> at the repository root.
+		list(APPEND CMAKE_PREFIX_PATH "${CMAKE_CURRENT_SOURCE_DIR}/android-deps/${ANDROID_ABI}")
+		list(APPEND CMAKE_FIND_ROOT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/android-deps/${ANDROID_ABI}")
 	endif()
 
 	# Port note: Zuma Deluxe's music is a MO3 tracker module, which needs

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Zuma Deluxe Portable
+Comment=Source port of Zuma Deluxe (bring your own game files)
+Exec=/usr/bin/zuma-portable
+Icon=zuma-portable
+Terminal=false
+Type=Application
+Categories=Game;
+StartupWMClass=zuma-portable
+TryExec=/usr/bin/zuma-portable
