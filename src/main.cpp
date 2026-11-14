@@ -101,14 +101,14 @@ static void Zuma_RegisterDiagLog()
 
 int main(int argc, char** argv)
 {
-    (void)argc;
-    (void)argv;
-
 #ifdef __ANDROID__
     Zuma_RegisterDiagLog();
 #endif
 
     Sexy::CircleShootApp* anApp = new Sexy::CircleShootApp();
+    // Resource and save folders must be selected before Init reads them.
+    anApp->SetArgs(argc, argv);
+    anApp->DoParseCmdLine();
     anApp->Init();
     anApp->Start();
     anApp->Shutdown();
